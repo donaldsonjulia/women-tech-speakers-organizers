@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/fempire/women-tech-speakers-organizers#readme",
   "dependencies": {
+    "fs-extra": "^4.0.2",
     "lodash": "^4.17.4",
     "remark-html": "^6.0.1",
     "remark-parse": "^4.0.0",
