@@ -1,12 +1,20 @@
 const { resolve } = require('path');
-const { readFileSync } = require('fs');
+const fs = require('fs-extra');
 const _ = require('lodash');
 const writeJson = require('./utils/write-json');
 const mdToJson = require('./utils/md-to-json');
 
+// check to see if data folder exists, if not, create it
+fs.ensureDir('./data')
+    .then(() => {
+    console.log("Directory 'data' exists.")
+    })
+    .catch(err => {
+    console.error(err)
+    });
+
 // get README.md as string
-let file = resolve(__dirname, './README.md');
-let md = readFileSync(file).toString();
+let md = fs.readFileSync('./README.md').toString();
 
 // maps markdown string to object in which all headings are keys
 let rawJson = mdToJson(md);
@@ -44,7 +52,6 @@ let nameValuesToPull = [
 let cleanData = _.pullAllBy(data, nameValuesToPull , 'name');
 
 writeJson('data/all.json', cleanData); // write all data
-
 
 // get indices of section headers
 let indexOfSpeakers = _.findIndex(cleanData, { name: 'Women Tech Speakers' });
