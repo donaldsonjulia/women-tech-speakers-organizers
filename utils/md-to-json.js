@@ -2,6 +2,7 @@ const unified = require('unified');
 const markdown = require('remark-parse');
 const html = require('remark-html');
 const assert = require('assert');
+const writeJson = require('./write-json');
 
 
 // map a markdown string to an object
@@ -16,12 +17,17 @@ function mdToJson (txt) {
 
   let tokens = lexer.parse(txt).children; // parsed tokens from Markdown Abstract Syntax Tree format
   let results = {};
-  let key = '';
+  let key = ''; 
 
   tokens.forEach(function (token, i) {
     // make object keys from all headings
     if (token.type === 'heading') {
       key = token.children[0].value; 
+
+      // make sure that any headings that are also links are not undefined
+      if ( key === undefined && token.children[0].type === 'link') {
+         key = token.children[0].children[0].value;
+      }
 
       // check if heading value already exists as object key
       // if so, add a flag to mark it is a duplicate value and make it unique to assign to object

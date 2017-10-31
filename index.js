@@ -33,10 +33,21 @@ let data = jsonEntries.map((i) => {
       i[0] = trimmedName;
     }
 
-    return {
-        name: i[0],
-        info: i[1]
-    };
+    // flag as type:'section-header' if they do not contain data
+    if (i[1].html === '') {
+
+        return {
+            name: i[0],
+            type: 'section-header'
+        };
+
+    } else {
+
+        return {
+            name: i[0],
+            info: i[1]
+        };
+    }
 });
 
 // define values for objects parsed from markdown (unrelated to data) that we want to remove
@@ -44,16 +55,14 @@ let nameValuesToPull = [
     { name: 'Fempire' }, 
     { name: 'Example Format' }, 
     { name: 'Full Name (First, Last)'},
-    { name: 'Table of Contents'},
     { name: 'undefined'}
 ]; 
 
 // remove objects unrelated to data
 let cleanData = _.pullAllBy(data, nameValuesToPull , 'name');
 
-writeJson('data/all.json', cleanData); // write all data
-
 // get indices of section headers
+let indexOfTableOfContents = _.findIndex(cleanData, { name: 'Table of Contents' });
 let indexOfSpeakers = _.findIndex(cleanData, { name: 'Women Tech Speakers' });
 let indexOfOrganizers = _.findIndex(cleanData, { name: 'Women Tech Organizers' });
 let indexOfInterested = _.findIndex(cleanData, { name: 'Women Interested In Getting Started / Getting Involved' });
@@ -61,14 +70,16 @@ let indexOfMentors = _.findIndex(cleanData, { name: 'People Interested In Mentor
 
 
 // create new array for each of the data types (speakers, organizers, interested, mentors)
-// still in jsonML
-let speakers = cleanData.slice(indexOfSpeakers, indexOfOrganizers);
-let organizers = cleanData.slice(indexOfOrganizers, indexOfInterested);
-let interested = cleanData.slice(indexOfInterested, indexOfMentors);
-let mentors = cleanData.slice(indexOfMentors);
+// remove first 'title' object ex. { name: 'Women Tech Speakers }
+let tableOfContents = cleanData.slice(indexOfTableOfContents, indexOfSpeakers).slice(1);
+let speakers = cleanData.slice(indexOfSpeakers, indexOfOrganizers).slice(1);
+let organizers = cleanData.slice(indexOfOrganizers, indexOfInterested).slice(1);
+let interested = cleanData.slice(indexOfInterested, indexOfMentors).slice(1);
+let mentors = cleanData.slice(indexOfMentors).slice(1);
 
 
-// write separated lists to individual files
+// write separated data to individual files
+writeJson('data/table-of-contents.json', tableOfContents);
 writeJson('data/speakers-data.json', speakers); 
 writeJson('data/organizers-data.json', organizers); 
 writeJson('data/interested-data.json', interested); 
