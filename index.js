@@ -96,6 +96,8 @@ async function init() {
         await fs.writeJson('data/interested-data.json', interested); 
         await fs.writeJson('data/mentors-data.json', mentors); 
 
+        console.log('Successfully wrote all .json files to data directory.');
+
     } catch (error) {
         console.error(error);
     }
