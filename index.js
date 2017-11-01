@@ -3,6 +3,7 @@ const fs = require('fs-extra');
 const _ = require('lodash');
 const writeJson = require('./utils/write-json');
 const mdToJson = require('./utils/md-to-json');
+const flattenTree = require('./utils/flatten-mdast-tree');
 
 // check to see if data folder exists, if not, create it
 fs.ensureDir('./data')
@@ -76,6 +77,24 @@ let speakers = cleanData.slice(indexOfSpeakers, indexOfOrganizers).slice(1);
 let organizers = cleanData.slice(indexOfOrganizers, indexOfInterested).slice(1);
 let interested = cleanData.slice(indexOfInterested, indexOfMentors).slice(1);
 let mentors = cleanData.slice(indexOfMentors).slice(1);
+
+// flatten trees MDAST trees and attach to each object
+function addFlatInfo(array) {
+    return array.forEach((item) => {
+        if (item.type === 'section-header') {
+            return;
+        } 
+        let tree = item.info.mdast;
+        let flat = flattenTree(tree);
+        item.flat = flat;
+    });
+}
+
+addFlatInfo(tableOfContents);
+addFlatInfo(speakers);
+addFlatInfo(organizers);
+addFlatInfo(interested);
+addFlatInfo(mentors);
 
 
 // write separated data to individual files

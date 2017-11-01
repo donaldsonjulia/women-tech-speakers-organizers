@@ -2,8 +2,6 @@ const unified = require('unified');
 const markdown = require('remark-parse');
 const html = require('remark-html');
 const assert = require('assert');
-const writeJson = require('./write-json');
-
 
 // map a markdown string to an object
 // with `html` and `raw` fields
@@ -11,11 +9,11 @@ const writeJson = require('./write-json');
 function mdToJson (txt) {
   assert.equal(typeof txt, 'string', 'input should be a markdown string');
 
-  const lexer = unified()
-    .use(markdown)
-    .use(html);
+  const parser = unified().use(markdown);
+  
+  const toHtml = unified().use(markdown).use(html);
 
-  let tokens = lexer.parse(txt).children; // parsed tokens from Markdown Abstract Syntax Tree format
+  let tokens = parser.parse(txt).children; // parsed tokens from Markdown Abstract Syntax Tree format
   let results = {};
   let key = ''; 
 
@@ -45,7 +43,7 @@ function mdToJson (txt) {
 
     // push any subsequent non-heading token into array
     results[key].push(token);
-  })
+  });
 
   // parse array of subsequent tokens into raw or html strings
   Object.keys(results).forEach(function (key) {
@@ -53,17 +51,18 @@ function mdToJson (txt) {
       type: 'root',
       children: results[key]
     };
- 
+
     results[key] = {
-      // raw: trimRight(unified().use(markdown).stringify(tree)),
-      html: trimRight(lexer.stringify(tree))
+      html: trimRight(toHtml.stringify(tree)),
+      mdast: tree
     }
-  })
+
+  });
 
   return results;
 }
 
-// trim whitespace at the
+// trim whitespace/newline at the
 // end of a string
 // str -> str
 function trimRight (value) {
