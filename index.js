@@ -70,23 +70,29 @@ async function init() {
         let interested = cleanData.slice(indexOfInterested, indexOfMentors).slice(1);
         let mentors = cleanData.slice(indexOfMentors).slice(1);
 
-        // flatten trees MDAST trees and attach to each object
+        // flatten MDAST trees and attach flat data to each object
+        // and remove MDAST tree from object to declutter
         function addFlatInfo(array) {
-        return array.forEach((item) => {
+        return array.map((item) => {
             if (item.type === 'section-header') {
-                return;
+                return item;
             } 
             let tree = item.info.mdast;
             let flat = flattenTree(tree);
-            item.flat = flat;
+            item = {
+                name: item.name,
+                html: item.info.html,
+                flat: flat
+            };  
+            return item;        
         });
         }
 
-        addFlatInfo(tableOfContents);
-        addFlatInfo(speakers);
-        addFlatInfo(organizers);
-        addFlatInfo(interested);
-        addFlatInfo(mentors);
+        tableOfContents = addFlatInfo(tableOfContents);
+        speakers = addFlatInfo(speakers);
+        organizers = addFlatInfo(organizers);
+        interested = addFlatInfo(interested);
+        mentors = addFlatInfo(mentors);
 
 
         // write separated data to individual files
