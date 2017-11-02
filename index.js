@@ -73,20 +73,38 @@ async function init() {
         // flatten MDAST trees and attach flat data to each object
         // and remove MDAST tree from object to declutter
         function addFlatInfo(array) {
-        return array.map((item) => {
-            if (item.type === 'section-header') {
-                return item;
-            } 
-            let tree = item.info.mdast;
-            let flat = flattenTree(tree);
-            item = {
-                name: item.name,
-                html: item.info.html,
-                flat: flat
-            };  
-            return item;        
-        });
+            return array.map((item) => {
+                if (item.type === 'section-header') {
+                    return item;
+                } 
+                let tree = item.info.mdast;
+                let flat = flattenTree(tree);
+                item = {
+                    name: item.name,
+                    html: item.info.html,
+                    flat: flat
+                };  
+                return item;        
+            });
         }
+
+        // assign regions to each person using preceding section-header value
+        function assignRegions(array) {
+            let currentRegion = '';
+
+            array.forEach((item) => {
+                if (item.type === 'section-header') {
+                    currentRegion = item.name;
+                } else {
+                    item.region = currentRegion;
+    
+                    if (item.region === 'US') { item.region = 'United States'; }
+                    if (item.region === 'AUS') { item.region = 'Australia'; }
+                }
+            
+            });
+        }
+
 
         tableOfContents = addFlatInfo(tableOfContents);
         speakers = addFlatInfo(speakers);
@@ -94,7 +112,11 @@ async function init() {
         interested = addFlatInfo(interested);
         mentors = addFlatInfo(mentors);
 
-
+        assignRegions(speakers);
+        assignRegions(organizers);
+        assignRegions(interested);
+        assignRegions(mentors);
+    
         // write separated data to individual files
         await fs.writeJson('data/table-of-contents.json', tableOfContents);
         await fs.writeJson('data/speakers-data.json', speakers); 
