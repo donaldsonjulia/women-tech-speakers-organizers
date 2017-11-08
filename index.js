@@ -46,29 +46,34 @@ async function init() {
         // define values for objects parsed from markdown (unrelated to data) that we want to remove
         let nameValuesToPull = [
         { name: 'Fempire' }, 
-        { name: 'Example Format' }, 
-        { name: 'Full Name (First, Last)'},
-        { name: 'undefined'}
+        { name: 'Code of Conduct' }, 
+        { name: 'Contributing' },
+        { name: 'Formatting' }
         ]; 
 
         // remove objects unrelated to data
         let cleanData = _.pullAllBy(data, nameValuesToPull , 'name');
 
+        // separate table of contents from data and store as variable
+        // TODO: do we need this???
+        let tableOfContents = _.pullAt(data, 0);
+
         // get indices of section headers
-        let indexOfTableOfContents = _.findIndex(cleanData, { name: 'Table of Contents' });
-        let indexOfSpeakers = _.findIndex(cleanData, { name: 'Women Tech Speakers' });
-        let indexOfOrganizers = _.findIndex(cleanData, { name: 'Women Tech Organizers' });
-        let indexOfInterested = _.findIndex(cleanData, { name: 'Women Interested In Getting Started / Getting Involved' });
-        let indexOfMentors = _.findIndex(cleanData, { name: 'People Interested In Mentoring Women' });
+        // let indexOfTableOfContents = _.findIndex(cleanData, { name: 'Table of Contents' });
+        let indexOfSpeakers = _.findIndex(cleanData, { name: 'Speakers' });
+        let indexOfOrganizers = _.findIndex(cleanData, { name: 'Organizers' });
+        let indexOfMentors = _.findIndex(cleanData, { name: 'Mentors' });
+        let indexOfInterested = _.findIndex(cleanData, { name: 'Getting Started' });
 
 
         // create new array for each of the data types (speakers, organizers, interested, mentors)
         // remove first 'title' object ex. { name: 'Women Tech Speakers }
-        let tableOfContents = cleanData.slice(indexOfTableOfContents, indexOfSpeakers).slice(1);
+        // let tableOfContents = cleanData.slice(indexOfTableOfContents, indexOfSpeakers).slice(1);
         let speakers = cleanData.slice(indexOfSpeakers, indexOfOrganizers).slice(1);
-        let organizers = cleanData.slice(indexOfOrganizers, indexOfInterested).slice(1);
-        let interested = cleanData.slice(indexOfInterested, indexOfMentors).slice(1);
-        let mentors = cleanData.slice(indexOfMentors).slice(1);
+        let organizers = cleanData.slice(indexOfOrganizers, indexOfMentors).slice(1);
+        let mentors = cleanData.slice(indexOfMentors, indexOfInterested).slice(1);
+        let interested = cleanData.slice(indexOfInterested).slice(1);
+        
 
         // flatten MDAST trees and attach flat data to each object
         // and remove MDAST tree from object to declutter
@@ -89,24 +94,25 @@ async function init() {
         }
 
         // assign regions to each person using preceding section-header value
+        // function returns an array of region-assigned persons without section-headers
         function assignRegions(array) {
             let currentRegion = '';
 
+            // assign preceding region section-header as property on each person object
             array.forEach((item) => {
                 if (item.type === 'section-header') {
                     currentRegion = item.name;
                 } else {
                     item.region = currentRegion;
-    
-                    if (item.region === 'US') { item.region = 'United States'; }
-                    if (item.region === 'AUS') { item.region = 'Australia'; }
                 }
-            
             });
+
+            // remove section-headers from data after using them to assign regions
+            _.pullAllBy(array, [{ type: 'section-header' }], 'type');
         }
 
 
-        tableOfContents = addFlatInfo(tableOfContents);
+        // tableOfContents = addFlatInfo(tableOfContents);
         speakers = addFlatInfo(speakers);
         organizers = addFlatInfo(organizers);
         interested = addFlatInfo(interested);
@@ -116,7 +122,8 @@ async function init() {
         assignRegions(organizers);
         assignRegions(interested);
         assignRegions(mentors);
-    
+
+
         // write separated data to individual files
         await fs.writeJson('data/table-of-contents.json', tableOfContents);
         await fs.writeJson('data/speakers-data.json', speakers); 
