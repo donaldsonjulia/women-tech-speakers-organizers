@@ -1,3 +1,6 @@
+const _ = require('lodash');
+const toString = require('mdast-util-to-string');
+
 function flattenTree(tree) {
     let flatList = []; 
 
@@ -31,6 +34,8 @@ function flattenTree(tree) {
 
         if (li.children[0].children.length > 1) {
             // TODO: need to deal with cases where there are multiple nodes inside the list item's paragraph...
+            // currently this just attaches a 'raw' property so we can see what has been overlooked
+            content.raw = toString(li.children[0]);
         }
 
        

@@ -1,7 +1,8 @@
 const fs = require('fs-extra');
 const _ = require('lodash');
 const mdToJson = require('./utils/md-to-json');
-const flattenTree = require('./utils/flatten-mdast-tree');
+const categorize = require('./utils/categorize-data');
+const mapSpeakers = require('./utils/map-speakers');
 
 async function init() {
     try {
@@ -38,7 +39,8 @@ async function init() {
 
         return {
             name: i[0],
-            info: i[1]
+            html: i[1].html,
+            mdast: i[1].mdast
         };
 
         });
@@ -75,57 +77,16 @@ async function init() {
         let interested = cleanData.slice(indexOfInterested).slice(1);
         
 
-        // flatten MDAST trees and attach flat data to each object
-        // and remove MDAST tree from object to declutter
-        function addFlatInfo(array) {
-            return array.map((item) => {
-                if (item.type === 'section-header') {
-                    return item;
-                } 
-                let tree = item.info.mdast;
-                let flat = flattenTree(tree);
-                item = {
-                    name: item.name,
-                    html: item.info.html,
-                    flat: flat
-                };  
-                return item;        
-            });
-        }
+        // assign region and category to each person
+        categorize(speakers, 'speaker');
+        categorize(organizers, 'organizer');
+        categorize(interested, 'interested');
+        categorize(mentors, 'mentor');
 
-        // assign regions to each person using preceding section-header value
-        // function returns an array of region-assigned persons without section-headers
-        function assignRegions(array) {
-            let currentRegion = '';
-
-            // assign preceding region section-header as property on each person object
-            array.forEach((item) => {
-                if (item.type === 'section-header') {
-                    currentRegion = item.name;
-                } else {
-                    item.region = currentRegion;
-                }
-            });
-
-            // remove section-headers from data after using them to assign regions
-            _.pullAllBy(array, [{ type: 'section-header' }], 'type');
-        }
-
-
-        // tableOfContents = addFlatInfo(tableOfContents);
-        speakers = addFlatInfo(speakers);
-        organizers = addFlatInfo(organizers);
-        interested = addFlatInfo(interested);
-        mentors = addFlatInfo(mentors);
-
-        assignRegions(speakers);
-        assignRegions(organizers);
-        assignRegions(interested);
-        assignRegions(mentors);
-
+        // map data appropriately based on category
+        speakers = mapSpeakers(speakers);
 
         // write separated data to individual files
-        await fs.writeJson('data/table-of-contents.json', tableOfContents);
         await fs.writeJson('data/speakers-data.json', speakers); 
         await fs.writeJson('data/organizers-data.json', organizers); 
         await fs.writeJson('data/interested-data.json', interested); 

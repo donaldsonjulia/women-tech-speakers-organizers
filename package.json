@@ -22,6 +22,7 @@
   "dependencies": {
     "fs-extra": "^4.0.2",
     "lodash": "^4.17.4",
+    "mdast-util-to-string": "^1.0.4",
     "remark": "^8.0.0",
     "remark-html": "^6.0.1",
     "remark-lint": "^6.0.1",
