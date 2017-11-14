@@ -20,7 +20,7 @@ function mapSpeakers(array) {
             region = person.region,
             twitter = '',
             website = '',
-            email = '',
+            email = [],
             location = person.region,
             topics = [],
             languages = ['English'],
@@ -148,7 +148,7 @@ function mapSpeakers(array) {
                     });
                     return;
                 }
-                email = address;
+                email.push(address);
                 return;
             }
 
