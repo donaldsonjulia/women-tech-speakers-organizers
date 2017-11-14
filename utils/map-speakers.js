@@ -20,6 +20,7 @@ function mapSpeakers(array) {
             region = person.region,
             twitter = '',
             website = '',
+            email = '',
             location = person.region,
             topics = [],
             languages = ['English'],
@@ -37,6 +38,9 @@ function mapSpeakers(array) {
                 isLocation = /^Location/,
                 isTopics = /^Topics/,
                 isLanguages = /^Languages besides English/;
+                hasEmailAddress = /([\w\.]+)@([\w\.]+)\.(\w+)/g;
+                mentionsEmail = /e-?mail/ig;
+
             
             // assign twitter handle if twitter is present
             if (isTwitterUrl.test(item.href) && isTwitterHandle.test(item.text)) {
@@ -133,6 +137,21 @@ function mapSpeakers(array) {
                 return;
             }
 
+            if (mentionsEmail.test(item.text) || mentionsEmail.test(item.raw) || hasEmailAddress.test(item.text) || hasEmailAddress.test(item.raw)) {
+                let address = item.text.match(hasEmailAddress);
+    
+                if (!address) {
+                    format_errors.push({
+                        field: 'email',
+                        message: 'format error',
+                        raw: item.raw
+                    });
+                    return;
+                }
+                email = address;
+                return;
+            }
+
          
             // if an item cannot be matched to a property, log error
             console.error('FORMAT ERROR: Undefined error for speaker ' + name);
@@ -151,6 +170,7 @@ function mapSpeakers(array) {
             region,
             twitter,
             website,
+            email,
             location,
             topics,
             languages,
@@ -162,7 +182,8 @@ function mapSpeakers(array) {
         // check for falsey values for all data attributes, if falsey then add key name to missing fields
         Object.entries(data).forEach(([key, value]) => {
             if (!value || value === []) {
-                if (key === 'links') return;
+                if (key === 'links') return; // additional links are not listed in suggested format for speaker
+                if (key === 'email') return; // email is not listed in suggested format for speaker
                 missing_fields.push(key);
             }
 
