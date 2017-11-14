@@ -23,23 +23,35 @@ function mapSpeakers(array) {
             location = person.region,
             topics = [],
             languages = ['English'],
+            links = [],
             html = person.html;
 
-
+        let undefined_fields = [];
+        let format_errors = [];
+ 
         flatArray.forEach((item) => {
-            let isTwitterHandle = /^@[a-z0-9_]+/i;
-            let isTwitterUrl = /^(http(s)?:\/\/)?(www\.)?twitter\.com\/[a-z0-9_]+/i;
-            let isUrl = /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/i;
-            let isLocation = /^Location/;
-            let isTopics = /^Topics/;
-            let isLanguages = /^Languages besides English/;
+            // regex patterns
+            let isTwitterHandle = /^@[a-z0-9_]+/i,
+                isTwitterUrl = /^(http(s)?:\/\/)?(www\.)?twitter\.com\/[a-z0-9_@\/]+/i,
+                isUrl = /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/i,
+                isLocation = /^Location/,
+                isTopics = /^Topics/,
+                isLanguages = /^Languages besides English/;
             
             // assign twitter handle if twitter is present
             if (isTwitterUrl.test(item.href) && isTwitterHandle.test(item.text)) {
-                let url = item.href.split('/');
-                let urlHandle = url[url.length - 1];
+
+                // trim url of trailing / characters and trim @ symbol from handle if included in url
+                let url = _.trimEnd(item.href, '/').split('/');
+                let urlHandle = _.trimStart(url[url.length - 1], '@'); 
+
+                // if twitter url handle and text handle do not match, use the url handle
+                // push a twitter error into format_errors array
                 if ('@' + urlHandle !== item.text) {
-                    console.error('FORMAT WARNING: Twitter handle and url do not match for speaker ' + name);
+                    format_errors.push({
+                        field: 'twitter',
+                        message: 'twitter handle and url do not match'
+                    });
                     twitter = '@' + urlHandle;
                     return;
                 }
@@ -49,6 +61,13 @@ function mapSpeakers(array) {
 
             // assign personal website if website is present
             if (isUrl.test(item.href) && !isTwitterUrl.test(item.href)) {
+        
+                //if website is already defined, push url into additional links array
+                if (website) {
+                    links.push(item.href);
+                    return;
+                }
+
                 website = item.href;
                 return;
             }
@@ -57,7 +76,11 @@ function mapSpeakers(array) {
             if (isLocation.test(item.text)) {
                let place = item.text.split('Location - ')[1];
 
-               if (place === '' || place === undefined) {
+               if (!place) {
+                   format_errors.push({
+                    field: 'location',
+                    message: 'format error'
+                });
                    console.error('FORMAT ERROR: LOCATION for speaker ' + name);
                    return;
                }
@@ -70,7 +93,11 @@ function mapSpeakers(array) {
             if (isTopics.test(item.text)) {
                 let topicString = item.text.split('Topics - ')[1];
 
-                if (topicString === '' || topicString === undefined) {
+                if (!topicString) {
+                    format_errors.push({
+                        field: 'topics',
+                        message: 'format error'
+                    });
                     console.error('FORMAT ERROR: TOPICS for speaker ' + name);
                     return;
                 }
@@ -86,7 +113,11 @@ function mapSpeakers(array) {
             if (isLanguages.test(item.text)) {
                 let languageString = item.text.split('Languages besides English - ')[1];
 
-                if (languageString === '' || languageString === undefined) {
+                if (!languageString) {
+                    format_errors.push({
+                        field: 'topics',
+                        message: 'format error'
+                    });
                     console.error('FORMAT ERROR: LANGUAGES for speaker ' + name);
                     return;
                 }
@@ -104,12 +135,17 @@ function mapSpeakers(array) {
 
          
             // if an item cannot be matched to a property, log error
-            console.error('FORMAT ERROR: Undefined error for speaker ' + name + ':', item.raw || item.text);
+            console.error('FORMAT ERROR: Undefined error for speaker ' + name);
+
+            // if an item cannot be matched to a property, push it into undefined fields array with it's raw value
+            undefined_fields.push({
+                raw: item.raw || item.text
+            });
+
 
         });
 
-
-        person = {
+        let data = {
             name,
             category,
             region,
@@ -118,8 +154,30 @@ function mapSpeakers(array) {
             location,
             topics,
             languages,
-            html
-        };  
+            links
+        };
+
+        let missing_fields = [];
+
+        // check for falsey values for all data attributes, if falsey then add key name to missing fields
+        Object.entries(data).forEach(([key, value]) => {
+            if (!value || value === []) {
+                if (key === 'links') return;
+                missing_fields.push(key);
+            }
+
+        });
+
+        // the returned person object includes data and meta-data 
+        person = {
+            data,
+            meta: {     
+                html,
+                format_errors,
+                missing_fields,
+                undefined_fields
+            },
+        }; 
 
         return person;        
     });
