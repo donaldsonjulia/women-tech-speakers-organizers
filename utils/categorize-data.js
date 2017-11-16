@@ -11,7 +11,7 @@ function categorize(array, category) {
             currentRegion = item.name;
         } else {
             item.region = currentRegion;
-            item.category = category;
+            item.type = category;
         }
     });
 

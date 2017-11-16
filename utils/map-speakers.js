@@ -4,9 +4,11 @@ const _ = require('lodash');
 // flatten MDAST trees and attach flat data to each object
 // and remove MDAST tree from object to declutter
 function mapSpeakers(array) {
-    return array.map((person) => {
+    return array.map((person, i) => {
 
-        if (person.category !== 'speaker') {
+        
+
+        if (person.type !== 'speaker') {
             console.error('Cannot map person as speaker. Category does not match.');
         }
 
@@ -16,7 +18,7 @@ function mapSpeakers(array) {
 
         // define default values to be assigned to each speaker
         let name = person.name,
-            category = person.category,
+            type = person.type,
             region = person.region,
             twitter = '',
             website = '',
@@ -164,9 +166,9 @@ function mapSpeakers(array) {
 
         });
 
-        let data = {
+        let attributes = {
             name,
-            category,
+            // type,
             region,
             twitter,
             website,
@@ -180,7 +182,7 @@ function mapSpeakers(array) {
         let missing_fields = [];
 
         // check for falsey values for all data attributes, if falsey then add key name to missing fields
-        Object.entries(data).forEach(([key, value]) => {
+        Object.entries(attributes).forEach(([key, value]) => {
             if (!value || value === []) {
                 if (key === 'links') return; // additional links are not listed in suggested format for speaker
                 if (key === 'email') return; // email is not listed in suggested format for speaker
@@ -191,7 +193,9 @@ function mapSpeakers(array) {
 
         // the returned person object includes data and meta-data 
         person = {
-            data,
+            type: person.type,
+            id: i + 1,
+            attributes,
             meta: {     
                 html,
                 format_errors,
