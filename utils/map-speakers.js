@@ -111,7 +111,7 @@ function mapSpeakers(array) {
 
             // push other languages into languages array (default includes english)
             if (validate.isLanguages(item)) {
-                let languageString = item.text.split('Languages besides English - ')[1] || item.text.split('Languages - ');
+                let languageString = item.text.split('Languages besides English - ')[1];
 
                 if (!languageString) {
                     format_errors.push({
