@@ -1,6 +1,7 @@
 const flattenTree = require('./flatten-mdast-tree');
 const _ = require('lodash');
 const validate = require('./validate-fields.js');
+const assign = require('./assign-values');
  
 // flatten MDAST trees and attach flat data to each object
 // and remove MDAST tree from object to declutter
@@ -36,21 +37,25 @@ function mapSpeakers(array) {
             // assign twitter handle if twitter is present
             if (validate.isTwitter(item)) {
 
-                // trim url of trailing / characters and trim @ symbol from handle if included in url
+                let handle = _.trim(item.text);
+
+                // trim url of trailing / characters 
+                // trim @ symbol from handle if included in url to avoid duplicates
                 let url = _.trimEnd(item.href, '/').split('/');
-                let urlHandle = _.trimStart(url[url.length - 1], '@'); 
+                let urlHandle = _.trimStart(url[url.length - 1], '@');
 
                 // if twitter url handle and text handle do not match, use the url handle
                 // push a twitter error into format_errors array
-                if ('@' + urlHandle !== item.text) {
+                if ('@' + urlHandle.toLowerCase() !== handle.toLowerCase()) {
                     format_errors.push({
                         field: 'twitter',
-                        message: 'twitter handle and url do not match'
+                        message: 'twitter handle and url do not match',
+                        raw: item.raw
                     });
                     twitter = '@' + urlHandle;
                     return;
                 }
-                twitter = item.text;
+                twitter = handle;
                 return;
             }
 
@@ -74,9 +79,9 @@ function mapSpeakers(array) {
                if (!place) {
                    format_errors.push({
                     field: 'location',
-                    message: 'format error'
+                    message: 'format error',
+                    raw: item.raw
                 });
-                   console.error('FORMAT ERROR: LOCATION for speaker ' + name);
                    return;
                }
 
@@ -91,9 +96,9 @@ function mapSpeakers(array) {
                 if (!topicString) {
                     format_errors.push({
                         field: 'topics',
-                        message: 'format error'
+                        message: 'format error',
+                        raw: item.raw
                     });
-                    console.error('FORMAT ERROR: TOPICS for speaker ' + name);
                     return;
                 }
 
@@ -106,14 +111,14 @@ function mapSpeakers(array) {
 
             // push other languages into languages array (default includes english)
             if (validate.isLanguages(item)) {
-                let languageString = item.text.split('Languages besides English - ')[1];
+                let languageString = item.text.split('Languages besides English - ')[1] || item.text.split('Languages - ');
 
                 if (!languageString) {
                     format_errors.push({
-                        field: 'topics',
-                        message: 'format error'
+                        field: 'languages',
+                        message: 'format error',
+                        raw: item.raw
                     });
-                    console.error('FORMAT ERROR: LANGUAGES for speaker ' + name);
                     return;
                 }
 
@@ -129,7 +134,8 @@ function mapSpeakers(array) {
             }
 
             if (validate.isEmail(item)) {
-                let address = item.text.match(/([\w\.]+)@([\w\.]+)\.(\w+)/g);
+                let emailRegex = /([\w\.]+)@([\w\.]+)\.(\w+)/;
+                let address = item.text.match(emailRegex) || item.raw.match(emailRegex);
     
                 if (!address) {
                     format_errors.push({
@@ -145,10 +151,11 @@ function mapSpeakers(array) {
 
          
             // if an item cannot be matched to a property, log error
-            console.error('FORMAT ERROR: Undefined error for speaker ' + name);
+            console.error('Undefined field format for speaker ' + name);
 
             // if an item cannot be matched to a property, push it into undefined fields array with it's raw value
             undefined_fields.push({
+                field: 'undefined',
                 raw: item.raw || item.text
             });
 

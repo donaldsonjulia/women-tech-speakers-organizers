@@ -1,10 +1,10 @@
 // regex patterns
-let twitterHandle = /^@[a-z0-9_]+/i,
-    twitterUrl = /^(http(s)?:\/\/)?(www\.)?twitter\.com\/[a-z0-9_@\/]+/i,
+let twitterHandle = /^@[a-zA-Z0-9_]+/i,
+    twitterUrl = /^(http(s)?:\/\/)?(www\.)?twitter\.com\/[a-zA-Z0-9_@\/]+/i,
     url = /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/i,
     location = /^Location/,
     topics = /^Topics/,
-    languages = /^Languages besides English/;
+    languages = /^Languages/;
     hasEmailAddress = /([\w\.]+)@([\w\.]+)\.(\w+)/g;
     mentionsEmail = /e-?mail/ig;
 
