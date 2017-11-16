@@ -1,7 +1,8 @@
 const flattenTree = require('./flatten-mdast-tree');
 const _ = require('lodash');
 const validate = require('./validate-fields.js');
-const assign = require('./assign-values');
+const getValues = require('./get-values');
+const FormatError = require('./format-error-constructor');
  
 // flatten MDAST trees and attach flat data to each object
 // and remove MDAST tree from object to declutter
@@ -36,32 +37,16 @@ function mapSpeakers(array) {
             
             // assign twitter handle if twitter is present
             if (validate.isTwitter(item)) {
-
-                let handle = _.trim(item.text);
-
-                // trim url of trailing / characters 
-                // trim @ symbol from handle if included in url to avoid duplicates
-                let url = _.trimEnd(item.href, '/').split('/');
-                let urlHandle = _.trimStart(url[url.length - 1], '@');
-
-                // if twitter url handle and text handle do not match, use the url handle
-                // push a twitter error into format_errors array
-                if ('@' + urlHandle.toLowerCase() !== handle.toLowerCase()) {
-                    format_errors.push({
-                        field: 'twitter',
-                        message: 'twitter handle and url do not match',
-                        raw: item.raw
-                    });
-                    twitter = '@' + urlHandle;
-                    return;
-                }
-                twitter = handle;
+                try {
+                    twitter = getValues.twitter(item);
+                } catch (err) {
+                    format_errors.push(err);
+                }   
                 return;
             }
 
             // assign personal website if website is present
             if (validate.isWebsite(item)) {
-        
                 //if website is already defined, push url into additional links array
                 if (website) {
                     links.push(item.href);
@@ -72,93 +57,54 @@ function mapSpeakers(array) {
                 return;
             }
 
-            // assign location if location is present (if not, default is region)
+            // assign location if present (if not, default is region)
             if (validate.isLocation(item)) {
-               let place = item.text.split('Location - ')[1];
-
-               if (!place) {
-                   format_errors.push({
-                    field: 'location',
-                    message: 'format error',
-                    raw: item.raw
-                });
-                   return;
-               }
-
-               location = place;
-               return;
+                try {
+                    location = getValues.location(item);
+                } catch (err) {
+                    format_errors.push(err);
+                }
+                return;
             }
 
-            // add topics if present
+            // assign topics if present
             if (validate.isTopics(item)) {
-                let topicString = item.text.split('Topics - ')[1];
-
-                if (!topicString) {
-                    format_errors.push({
-                        field: 'topics',
-                        message: 'format error',
-                        raw: item.raw
-                    });
-                    return;
+                try {
+                    topics = getValues.topics(item);
+                } catch (err) {
+                    format_errors.push(err);
                 }
-
-                topics = topicString.split(',').map((topic) => {
-                   return  _.trim(topic);
-                });
-
                 return;
             }
 
-            // push other languages into languages array (default includes english)
+            // assign languages array if additional languages present (default is ['English'])
             if (validate.isLanguages(item)) {
-                let languageString = item.text.split('Languages besides English - ')[1];
-
-                if (!languageString) {
-                    format_errors.push({
-                        field: 'languages',
-                        message: 'format error',
-                        raw: item.raw
-                    });
-                    return;
+                try {
+                    languages = getValues.languages(item);
+                } catch (err) {
+                    format_errors.push(err);
                 }
-
-                otherLanguages = languageString.split(',').map((lang) => {
-                   return  _.trim(lang);
-                });
-
-                otherLanguages.forEach((lang) => {
-                    languages.push(lang);
-                });
-
                 return;
             }
 
+            // assign email address array if addresses are present
             if (validate.isEmail(item)) {
-                let emailRegex = /([\w\.]+)@([\w\.]+)\.(\w+)/;
-                let address = item.text.match(emailRegex) || item.raw.match(emailRegex);
-    
-                if (!address) {
-                    format_errors.push({
-                        field: 'email',
-                        message: 'format error',
-                        raw: item.raw
+                try {
+                    let addresses = getValues.emails(item);
+                    addresses.forEach((address) => {
+                        email.push(address);
                     });
-                    return;
+                } catch (err) {
+                    format_errors.push(err);
                 }
-                email.push(address);
                 return;
             }
 
          
             // if an item cannot be matched to a property, log error
-            console.error('Undefined field format for speaker ' + name);
-
+            console.error('Undefined field for speaker ' + name);
             // if an item cannot be matched to a property, push it into undefined fields array with it's raw value
-            undefined_fields.push({
-                field: 'undefined',
-                raw: item.raw || item.text
-            });
-
+            undefined_fields.push( new FormatError(undefined, item, 'unknown field, format not recognized'));
 
         });
 
@@ -183,7 +129,6 @@ function mapSpeakers(array) {
                 if (key === 'email') return; // email is not listed in suggested format for speaker
                 missing_fields.push(key);
             }
-
         });
 
         // the returned person object includes data and meta-data 
