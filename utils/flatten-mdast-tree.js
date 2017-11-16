@@ -10,7 +10,8 @@ function flattenTree(tree) {
    listItems.forEach((li, i) => {
         let content = {
             href: '',
-            text: ''
+            text: '',
+            raw: toString(li)
         };
 
         // if list item is the parent node to only one paragraph node,
@@ -34,8 +35,7 @@ function flattenTree(tree) {
 
         if (li.children[0].children.length > 1) {
             // TODO: need to deal with cases where there are multiple nodes inside the list item's paragraph...
-            // currently this just attaches a 'raw' property so we can see what has been overlooked
-            content.raw = toString(li.children[0]);
+            // currently we just attach a 'raw' property so we can see what has been overlooked
         }
 
        
