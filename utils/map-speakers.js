@@ -1,12 +1,11 @@
 const flattenTree = require('./flatten-mdast-tree');
 const _ = require('lodash');
+const validate = require('./validate-fields.js');
  
 // flatten MDAST trees and attach flat data to each object
 // and remove MDAST tree from object to declutter
 function mapSpeakers(array) {
     return array.map((person, i) => {
-
-        
 
         if (person.type !== 'speaker') {
             console.error('Cannot map person as speaker. Category does not match.');
@@ -45,7 +44,7 @@ function mapSpeakers(array) {
 
             
             // assign twitter handle if twitter is present
-            if (isTwitterUrl.test(item.href) && isTwitterHandle.test(item.text)) {
+            if (validate.isTwitter(item)) {
 
                 // trim url of trailing / characters and trim @ symbol from handle if included in url
                 let url = _.trimEnd(item.href, '/').split('/');
@@ -66,7 +65,7 @@ function mapSpeakers(array) {
             }
 
             // assign personal website if website is present
-            if (isUrl.test(item.href) && !isTwitterUrl.test(item.href)) {
+            if (validate.isWebsite(item)) {
         
                 //if website is already defined, push url into additional links array
                 if (website) {
@@ -79,7 +78,7 @@ function mapSpeakers(array) {
             }
 
             // assign location if location is present (if not, default is region)
-            if (isLocation.test(item.text)) {
+            if (validate.isLocation(item)) {
                let place = item.text.split('Location - ')[1];
 
                if (!place) {
@@ -96,7 +95,7 @@ function mapSpeakers(array) {
             }
 
             // add topics if present
-            if (isTopics.test(item.text)) {
+            if (validate.isTopics(item)) {
                 let topicString = item.text.split('Topics - ')[1];
 
                 if (!topicString) {
@@ -116,7 +115,7 @@ function mapSpeakers(array) {
             }
 
             // push other languages into languages array (default includes english)
-            if (isLanguages.test(item.text)) {
+            if (validate.isLanguages(item)) {
                 let languageString = item.text.split('Languages besides English - ')[1];
 
                 if (!languageString) {
@@ -139,8 +138,8 @@ function mapSpeakers(array) {
                 return;
             }
 
-            if (mentionsEmail.test(item.text) || mentionsEmail.test(item.raw) || hasEmailAddress.test(item.text) || hasEmailAddress.test(item.raw)) {
-                let address = item.text.match(hasEmailAddress);
+            if (validate.isEmail(item)) {
+                let address = item.text.match(/([\w\.]+)@([\w\.]+)\.(\w+)/g);
     
                 if (!address) {
                     format_errors.push({
@@ -168,7 +167,6 @@ function mapSpeakers(array) {
 
         let attributes = {
             name,
-            // type,
             region,
             twitter,
             website,
