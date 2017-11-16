@@ -32,16 +32,6 @@ function mapSpeakers(array) {
         let format_errors = [];
  
         flatArray.forEach((item) => {
-            // regex patterns
-            let isTwitterHandle = /^@[a-z0-9_]+/i,
-                isTwitterUrl = /^(http(s)?:\/\/)?(www\.)?twitter\.com\/[a-z0-9_@\/]+/i,
-                isUrl = /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/i,
-                isLocation = /^Location/,
-                isTopics = /^Topics/,
-                isLanguages = /^Languages besides English/;
-                hasEmailAddress = /([\w\.]+)@([\w\.]+)\.(\w+)/g;
-                mentionsEmail = /e-?mail/ig;
-
             
             // assign twitter handle if twitter is present
             if (validate.isTwitter(item)) {

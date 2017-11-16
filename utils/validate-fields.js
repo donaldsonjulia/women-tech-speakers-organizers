@@ -5,7 +5,7 @@ let twitterHandle = /^@[a-z0-9_]+/i,
     location = /^Location/,
     topics = /^Topics/,
     languages = /^Languages besides English/;
-    emailAddress = /([\w\.]+)@([\w\.]+)\.(\w+)/g;
+    hasEmailAddress = /([\w\.]+)@([\w\.]+)\.(\w+)/g;
     mentionsEmail = /e-?mail/ig;
 
 
