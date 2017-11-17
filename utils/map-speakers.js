@@ -10,7 +10,7 @@ function mapSpeakers(array) {
     return array.map((person, i) => {
 
         if (person.type !== 'speaker') {
-            console.error('Cannot map person as speaker. Category does not match.');
+            console.error('Cannot map person as speaker. Type does not match.');
         }
 
         // flatten mdast tree into array
@@ -47,13 +47,17 @@ function mapSpeakers(array) {
 
             // assign personal website if website is present
             if (validate.isWebsite(item)) {
+                let site = {
+                    title: item.text,
+                    href: item.href
+                }
                 //if website is already defined, push url into additional links array
                 if (website) {
-                    links.push(item.href);
+                    links.push(site);
                     return;
                 }
 
-                website = item.href;
+                website = site;
                 return;
             }
 
@@ -104,7 +108,7 @@ function mapSpeakers(array) {
             // if an item cannot be matched to a property, log error
             console.error('Undefined field for speaker ' + name);
             // if an item cannot be matched to a property, push it into undefined fields array with it's raw value
-            undefined_fields.push( new FormatError(undefined, item, 'unknown field, format not recognized'));
+            undefined_fields.push( new FormatError('', item, 'unknown field, format not recognized'));
 
         });
 
