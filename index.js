@@ -2,7 +2,7 @@ const fs = require('fs-extra');
 const _ = require('lodash');
 const mdToJson = require('./utils/md-to-json');
 const categorize = require('./utils/categorize-data');
-const mapSpeakers = require('./utils/map-speakers');
+const mapPersons = require('./utils/map-persons');
 
 async function init() {
     try {
@@ -84,7 +84,10 @@ async function init() {
         categorize(mentors, 'mentor');
 
         // map data appropriately based on category
-        speakers = mapSpeakers(speakers);
+        speakers = mapPersons(speakers);
+        // organizers = mapPersons(organizers);
+        interested = mapPersons(interested);
+        mentors = mapPersons(mentors);
 
         // write separated data to individual files
         await fs.writeJson('data/speakers-data.json', speakers); 

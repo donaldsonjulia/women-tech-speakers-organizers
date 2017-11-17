@@ -6,58 +6,64 @@ const FormatError = require('./format-error-constructor');
  
 // flatten MDAST trees and attach flat data to each object
 // and remove MDAST tree from object to declutter
-function mapSpeakers(array) {
+function mapPersons(array) {
     return array.map((person, i) => {
-
-        if (person.type !== 'speaker') {
-            console.error('Cannot map person as speaker. Type does not match.');
-        }
 
         // flatten mdast tree into array
         let tree = person.mdast;
         let flatArray = flattenTree(tree);
 
-        // define default values to be assigned to each speaker
+        // define default values to be assigned to each person
         let name = person.name,
             type = person.type,
             region = person.region,
             twitter = '',
-            website = '',
+            personal_website = '',
             email = [],
             location = person.region,
             topics = [],
             languages = ['English'],
             links = [],
+            about = '',
+            how_to_contact = '',
             html = person.html;
 
         let undefined_fields = [];
         let format_errors = [];
+        
+        // will update this to keep track of ordered info
+        // like organizer's groups followed by group focus on next line
+        let lastAssignedValue = ''; 
  
-        flatArray.forEach((item) => {
+        flatArray.forEach((item, index) => {
             
             // assign twitter handle if twitter is present
             if (validate.isTwitter(item)) {
                 try {
                     twitter = getValues.twitter(item);
+                    lastAssignedValue = 'twitter';
                 } catch (err) {
                     format_errors.push(err);
+                    lastAssignedValue = 'error';
                 }   
                 return;
             }
 
-            // assign personal website if website is present
-            if (validate.isWebsite(item)) {
+            // assign personal website if website is present and person is NOT an organizer
+            if (validate.isWebsite(item) && person.type !== 'organizer') {
                 let site = {
                     title: item.text,
                     href: item.href
                 }
                 //if website is already defined, push url into additional links array
-                if (website) {
+                if (personal_website) {
                     links.push(site);
+                    lastAssignedValue = 'link';
                     return;
                 }
 
-                website = site;
+                personal_website = site;
+                lastAssignedValue = 'personal_website';
                 return;
             }
 
@@ -65,8 +71,10 @@ function mapSpeakers(array) {
             if (validate.isLocation(item)) {
                 try {
                     location = getValues.location(item);
+                    lastAssignedValue = 'location';
                 } catch (err) {
                     format_errors.push(err);
+                    lastAssignedValue = 'error';
                 }
                 return;
             }
@@ -75,8 +83,10 @@ function mapSpeakers(array) {
             if (validate.isTopics(item)) {
                 try {
                     topics = getValues.topics(item);
+                    lastAssignedValue = 'topics';
                 } catch (err) {
                     format_errors.push(err);
+                    lastAssignedValue = 'error';
                 }
                 return;
             }
@@ -85,8 +95,10 @@ function mapSpeakers(array) {
             if (validate.isLanguages(item)) {
                 try {
                     languages = getValues.languages(item);
+                    lastAssignedValue = 'languages';
                 } catch (err) {
                     format_errors.push(err);
+                    lastAssignedValue = 'error';
                 }
                 return;
             }
@@ -98,10 +110,19 @@ function mapSpeakers(array) {
                     addresses.forEach((address) => {
                         email.push(address);
                     });
+                    lastAssignedValue = 'email';
                 } catch (err) {
                     format_errors.push(err);
+                    lastAssignedValue = 'error';
                 }
                 return;
+            }
+
+            // assign 'about' if person type is either mentor or interested
+            if ((person.type === 'mentor' || person.type === 'interested') && index === flatArray.length - 1) {
+                    about = item.text;
+                    lastAssignedValue = 'about';
+                    return;
             }
 
          
@@ -109,6 +130,7 @@ function mapSpeakers(array) {
             console.error('Undefined field for speaker ' + name);
             // if an item cannot be matched to a property, push it into undefined fields array with it's raw value
             undefined_fields.push( new FormatError('', item, 'unknown field, format not recognized'));
+            lastAssignedValue = 'unknown';
 
         });
 
@@ -116,11 +138,13 @@ function mapSpeakers(array) {
             name,
             region,
             twitter,
-            website,
+            personal_website,
             email,
             location,
             topics,
             languages,
+            about,
+            how_to_contact,
             links
         };
 
@@ -129,8 +153,8 @@ function mapSpeakers(array) {
         // check for falsey values for all data attributes, if falsey then add key name to missing fields
         Object.entries(attributes).forEach(([key, value]) => {
             if (!value || value === []) {
-                if (key === 'links') return; // additional links are not listed in suggested format for speaker
-                if (key === 'email') return; // email is not listed in suggested format for speaker
+                //ignore some fields, do not flag them as missing
+                if (key === 'links' || key === 'email' || key === 'about' || key === 'how_to_contact') return;
                 missing_fields.push(key);
             }
         });
@@ -138,7 +162,7 @@ function mapSpeakers(array) {
         // the returned person object includes data and meta-data 
         person = {
             type: person.type,
-            id: i + 1,
+            id: i + 1, // assign id
             attributes,
             meta: {     
                 html,
@@ -154,4 +178,4 @@ function mapSpeakers(array) {
 
 
 
-module.exports = mapSpeakers;
+module.exports = mapPersons;
