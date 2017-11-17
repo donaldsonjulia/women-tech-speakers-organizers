@@ -35,7 +35,7 @@ module.exports = {
     },
 
     topics(item) {
-        let topicString = item.text.split('Topics - ')[1];
+        let topicString = item.text.split('- ')[1];
         
         if (!topicString) {
             throw new FormatError('topics', item);
@@ -50,7 +50,7 @@ module.exports = {
 
     languages(item) {
         let languages = ['English'];
-        let languageString = item.text.split(' - ')[1];
+        let languageString = item.text.split('- ')[1];
         
         if (!languageString) {
             throw new FormatError('language', item);
@@ -77,5 +77,15 @@ module.exports = {
         }
         return addresses;
     },
+
+    howToContact(item) {
+        let contactValue = item.text.split('- ')[1];
+        
+        if (!contactValue) {
+            throw new FormatError('how_to_contact', item);
+        }
+
+        return contactValue;
+    }
 
 };
