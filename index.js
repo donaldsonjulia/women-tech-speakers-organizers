@@ -58,10 +58,9 @@ async function init() {
 
         // separate table of contents from data and store as variable
         // TODO: do we need this???
-        let tableOfContents = _.pullAt(data, 0);
+        let tableOfContents = _.pullAt(cleanData, 0);
 
         // get indices of section headers
-        // let indexOfTableOfContents = _.findIndex(cleanData, { name: 'Table of Contents' });
         let indexOfSpeakers = _.findIndex(cleanData, { name: 'Speakers' });
         let indexOfOrganizers = _.findIndex(cleanData, { name: 'Organizers' });
         let indexOfMentors = _.findIndex(cleanData, { name: 'Mentors' });
@@ -69,8 +68,6 @@ async function init() {
 
 
         // create new array for each of the data types (speakers, organizers, interested, mentors)
-        // remove first 'title' object ex. { name: 'Women Tech Speakers }
-        // let tableOfContents = cleanData.slice(indexOfTableOfContents, indexOfSpeakers).slice(1);
         let speakers = cleanData.slice(indexOfSpeakers, indexOfOrganizers).slice(1);
         let organizers = cleanData.slice(indexOfOrganizers, indexOfMentors).slice(1);
         let mentors = cleanData.slice(indexOfMentors, indexOfInterested).slice(1);
@@ -91,7 +88,7 @@ async function init() {
 
         // write separated data to individual files
         await fs.writeJson('data/speakers-data.json', speakers); 
-        await fs.writeJson('data/organizers-data.json', organizers); 
+        // await fs.writeJson('data/organizers-data.json', organizers); 
         await fs.writeJson('data/interested-data.json', interested); 
         await fs.writeJson('data/mentors-data.json', mentors); 
 

@@ -103,6 +103,18 @@ function mapPersons(array) {
                 return;
             }
 
+            // assign how_to_contact if present 
+            // note - this allows the item to also pass through email validation afterwards
+            if (validate.isHowToContact(item)) {
+                console.log(item.text);
+                try {
+                    how_to_contact = getValues.howToContact(item);
+                } catch (err) {
+                    format_errors.push(err);
+                    lastAssignedValue = 'how_to_contact';
+                }
+            }
+
             // assign email address array if addresses are present
             if (validate.isEmail(item)) {
                 try {

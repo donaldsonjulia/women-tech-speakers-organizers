@@ -5,6 +5,7 @@ let twitterHandle = /^@[a-zA-Z0-9_]+/i,
     location = /^Location/,
     topics = /^Topics/,
     languages = /^Languages/;
+    contact = /^How to Contact/i;
     hasEmailAddress = /([\w\.]+)@([\w\.]+)\.(\w+)/g;
     mentionsEmail = /e-?mail/ig;
 
@@ -33,5 +34,9 @@ module.exports = {
     isEmail(item) {
         return mentionsEmail.test(item.text) || mentionsEmail.test(item.raw) || hasEmailAddress.test(item.text) || hasEmailAddress.test(item.raw);
     },
+
+    isHowToContact(item) {
+        return contact.test(item.text);
+    }
 
 };
