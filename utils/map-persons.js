@@ -28,7 +28,7 @@ function mapPersons(array) {
             how_to_contact = '',
             html = person.html;
 
-        let undefined_fields = [];
+        let unknown_fields = [];
         let format_errors = [];
         
         // will update this to keep track of ordered info
@@ -106,13 +106,14 @@ function mapPersons(array) {
             // assign how_to_contact if present 
             // note - this allows the item to also pass through email validation afterwards
             if (validate.isHowToContact(item)) {
-                console.log(item.text);
                 try {
                     how_to_contact = getValues.howToContact(item);
                 } catch (err) {
                     format_errors.push(err);
                     lastAssignedValue = 'how_to_contact';
                 }
+
+                if (!validate.isEmail(item)) return;
             }
 
             // assign email address array if addresses are present
@@ -139,9 +140,9 @@ function mapPersons(array) {
 
          
             // if an item cannot be matched to a property, log error
-            console.error('Undefined field for speaker ' + name);
+            console.error(`Unknown field for ${person.type} ${person.name}`);
             // if an item cannot be matched to a property, push it into undefined fields array with it's raw value
-            undefined_fields.push( new FormatError('', item, 'unknown field, format not recognized'));
+            unknown_fields.push( new FormatError('', item, 'unknown field, format not recognized'));
             lastAssignedValue = 'unknown';
 
         });
@@ -180,7 +181,7 @@ function mapPersons(array) {
                 html,
                 format_errors,
                 missing_fields,
-                undefined_fields
+                unknown_fields
             },
         }; 
 
