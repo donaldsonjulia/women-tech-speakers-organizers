@@ -73,7 +73,6 @@ async function init() {
         let mentors = cleanData.slice(indexOfMentors, indexOfInterested).slice(1);
         let interested = cleanData.slice(indexOfInterested).slice(1);
         
-
         // assign region and category to each person
         categorize(speakers, 'speaker');
         categorize(organizers, 'organizer');
@@ -82,13 +81,13 @@ async function init() {
 
         // map data appropriately based on category
         speakers = mapPersons(speakers);
-        // organizers = mapPersons(organizers);
+        organizers = mapPersons(organizers);
         interested = mapPersons(interested);
         mentors = mapPersons(mentors);
 
         // write separated data to individual files
         await fs.writeJson('data/speakers-data.json', speakers); 
-        // await fs.writeJson('data/organizers-data.json', organizers); 
+        await fs.writeJson('data/organizers-data.json', organizers); 
         await fs.writeJson('data/interested-data.json', interested); 
         await fs.writeJson('data/mentors-data.json', mentors); 
 
