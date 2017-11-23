@@ -2,6 +2,21 @@ const _ = require('lodash');
 const FormatError = require('./format-error-constructor');
 const validate = require('./validate-fields.js');
 
+function getValueAfterDash(rawString) {
+    let rawValues = rawString.split('-');
+    let valueToReturn = rawValues[1];
+
+    if (rawValues.length > 2) {
+        for (let i = 2; i < rawValues.length; i++) {
+            if (rawValues[i]) {
+              valueToReturn = valueToReturn + '-' + rawValues[i];
+            }
+        }
+    }
+
+    return  _.trim(valueToReturn);
+}
+
 
 module.exports = {
 
@@ -26,7 +41,7 @@ module.exports = {
  
 
     location(item) {
-        let locationValue = item.text.split('Location - ')[1];
+        let locationValue = getValueAfterDash(item.text);
         
         if (!locationValue) {
             throw new FormatError('location', item);
@@ -36,7 +51,7 @@ module.exports = {
     },
 
     topics(item) {
-        let topicString = item.text.split('- ')[1];
+        let topicString = getValueAfterDash(item.text);
         
         if (!topicString) {
             throw new FormatError('topics', item);
@@ -51,7 +66,7 @@ module.exports = {
 
     languages(item) {
         let languages = ['English'];
-        let languageString = item.text.split('- ')[1];
+        let languageString = getValueAfterDash(item.text);
         
         if (!languageString) {
             throw new FormatError('language', item);
@@ -80,7 +95,7 @@ module.exports = {
     },
 
     howToContact(item) {
-        let contactValue = item.text.split('- ')[1];
+        let contactValue = getValueAfterDash(item.text);
         
         if (!contactValue) {
             throw new FormatError('how_to_contact', item);
@@ -122,18 +137,7 @@ module.exports = {
     },
 
     groupFocus(item) {
-        let rawValues = item.text.split('-');
-        let focus = rawValues[1];
-
-        if (rawValues.length > 2) {
-            for (let i = 2; i < rawValues.length; i++) {
-                if (rawValues[i]) {
-                  focus = focus + '-' + rawValues[i];
-                }
-            }
-        }
-
-        focus = _.trim(focus);
+        let focus = getValueAfterDash(item.text);
 
         if (!focus) {
             throw new FormatError('group_focus', item);
