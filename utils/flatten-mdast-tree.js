@@ -11,6 +11,7 @@ function flattenTree(tree) {
         let content = {
             href: '',
             text: '',
+            mixed: [], 
             raw: toString(li)
         };
 
@@ -33,9 +34,22 @@ function flattenTree(tree) {
                 }
         }
 
+        // if there are multiple nodes inside a list item, push each node's value into content.mixed array
         if (li.children[0].children.length > 1) {
-            // TODO: need to deal with cases where there are multiple nodes inside the list item's paragraph...
-            // currently we just attach a 'raw' property so we can see what has been overlooked
+            let nodes = li.children[0].children;
+            nodes.forEach((node) => {
+                if (node.type === 'link') {
+                    content.mixed.push({
+                        href: node.url,
+                        text: node.children[0].value
+                    });
+                } else if (node.type === 'text') {
+                    content.mixed.push({
+                        href: null,
+                        text: node.value
+                    });
+                }
+            });
         }
 
        

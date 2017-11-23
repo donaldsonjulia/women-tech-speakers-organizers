@@ -1,5 +1,21 @@
 const _ = require('lodash');
 const FormatError = require('./format-error-constructor');
+const validate = require('./validate-fields.js');
+
+function getValueAfterDash(rawString) {
+    let rawValues = rawString.split('-');
+    let valueToReturn = rawValues[1];
+
+    if (rawValues.length > 2) {
+        for (let i = 2; i < rawValues.length; i++) {
+            if (rawValues[i]) {
+              valueToReturn = valueToReturn + '-' + rawValues[i];
+            }
+        }
+    }
+
+    return  _.trim(valueToReturn);
+}
 
 
 module.exports = {
@@ -25,7 +41,7 @@ module.exports = {
  
 
     location(item) {
-        let locationValue = item.text.split('Location - ')[1];
+        let locationValue = getValueAfterDash(item.text);
         
         if (!locationValue) {
             throw new FormatError('location', item);
@@ -35,7 +51,7 @@ module.exports = {
     },
 
     topics(item) {
-        let topicString = item.text.split('- ')[1];
+        let topicString = getValueAfterDash(item.text);
         
         if (!topicString) {
             throw new FormatError('topics', item);
@@ -50,7 +66,7 @@ module.exports = {
 
     languages(item) {
         let languages = ['English'];
-        let languageString = item.text.split('- ')[1];
+        let languageString = getValueAfterDash(item.text);
         
         if (!languageString) {
             throw new FormatError('language', item);
@@ -79,13 +95,55 @@ module.exports = {
     },
 
     howToContact(item) {
-        let contactValue = item.text.split('- ')[1];
+        let contactValue = getValueAfterDash(item.text);
         
         if (!contactValue) {
             throw new FormatError('how_to_contact', item);
         }
 
         return contactValue;
-    }
+    },
+
+    group(item) {
+        let group = {
+            name: '',
+            website: '',
+            location: '',
+            focus: ''
+        };
+
+        if (validate.isGroupSite(item)) {
+            group.name = item.text;
+            group.website = item.href;
+    
+        } else if (validate.isGroupSiteWithLocation(item)) {
+            group.name = item.mixed[0].text;
+            group.website = item.mixed[0].href;
+    
+            groupLocation = _.trimStart(item.mixed[1].text, [',']);
+            groupLocation = _.trim(groupLocation);
+            group.location = groupLocation;
+    
+            if (!group.location) {
+                throw new FormatError('group', item);
+            }
+        }
+
+        if (!group.name || !group.website || !group) {
+            throw new FormatError('group', item);
+        }
+
+        return group;
+    },
+
+    groupFocus(item) {
+        let focus = getValueAfterDash(item.text);
+
+        if (!focus) {
+            throw new FormatError('group_focus', item);
+        }
+
+        return focus;
+    },
 
 };

@@ -22,18 +22,15 @@ function mapPersons(array) {
             email = [],
             location = person.region,
             topics = [],
+            groups = [],
             languages = ['English'],
             links = [],
             about = '',
             how_to_contact = '',
             html = person.html;
 
-        let undefined_fields = [];
+        let unknown_fields = [];
         let format_errors = [];
-        
-        // will update this to keep track of ordered info
-        // like organizer's groups followed by group focus on next line
-        let lastAssignedValue = ''; 
  
         flatArray.forEach((item, index) => {
             
@@ -41,16 +38,15 @@ function mapPersons(array) {
             if (validate.isTwitter(item)) {
                 try {
                     twitter = getValues.twitter(item);
-                    lastAssignedValue = 'twitter';
                 } catch (err) {
                     format_errors.push(err);
-                    lastAssignedValue = 'error';
                 }   
                 return;
             }
 
             // assign personal website if website is present and person is NOT an organizer
-            if (validate.isWebsite(item) && person.type !== 'organizer') {
+            // OR assign non-twitter social handles to personal website (edge cases)
+            if ((validate.isWebsite(item) && person.type !== 'organizer') || validate.isSocialHandle(item)) {
                 let site = {
                     title: item.text,
                     href: item.href
@@ -58,12 +54,10 @@ function mapPersons(array) {
                 //if website is already defined, push url into additional links array
                 if (personal_website) {
                     links.push(site);
-                    lastAssignedValue = 'link';
                     return;
                 }
 
                 personal_website = site;
-                lastAssignedValue = 'personal_website';
                 return;
             }
 
@@ -71,10 +65,8 @@ function mapPersons(array) {
             if (validate.isLocation(item)) {
                 try {
                     location = getValues.location(item);
-                    lastAssignedValue = 'location';
                 } catch (err) {
                     format_errors.push(err);
-                    lastAssignedValue = 'error';
                 }
                 return;
             }
@@ -83,10 +75,8 @@ function mapPersons(array) {
             if (validate.isTopics(item)) {
                 try {
                     topics = getValues.topics(item);
-                    lastAssignedValue = 'topics';
                 } catch (err) {
                     format_errors.push(err);
-                    lastAssignedValue = 'error';
                 }
                 return;
             }
@@ -95,10 +85,8 @@ function mapPersons(array) {
             if (validate.isLanguages(item)) {
                 try {
                     languages = getValues.languages(item);
-                    lastAssignedValue = 'languages';
                 } catch (err) {
                     format_errors.push(err);
-                    lastAssignedValue = 'error';
                 }
                 return;
             }
@@ -106,13 +94,13 @@ function mapPersons(array) {
             // assign how_to_contact if present 
             // note - this allows the item to also pass through email validation afterwards
             if (validate.isHowToContact(item)) {
-                console.log(item.text);
                 try {
                     how_to_contact = getValues.howToContact(item);
                 } catch (err) {
                     format_errors.push(err);
-                    lastAssignedValue = 'how_to_contact';
                 }
+
+                if (!validate.isEmail(item)) return;
             }
 
             // assign email address array if addresses are present
@@ -122,10 +110,8 @@ function mapPersons(array) {
                     addresses.forEach((address) => {
                         email.push(address);
                     });
-                    lastAssignedValue = 'email';
                 } catch (err) {
                     format_errors.push(err);
-                    lastAssignedValue = 'error';
                 }
                 return;
             }
@@ -133,16 +119,51 @@ function mapPersons(array) {
             // assign 'about' if person type is either mentor or interested
             if ((person.type === 'mentor' || person.type === 'interested') && index === flatArray.length - 1) {
                     about = item.text;
-                    lastAssignedValue = 'about';
                     return;
             }
 
+            // if person.type = organizer, map groups accordingly
+            if (person.type === 'organizer') {
+        
+
+                // if group website is listed as single link or listed with location 
+                // add it to groups array
+                if (validate.isGroupSite(item) || validate.isGroupSiteWithLocation(item)) {
+                    try {
+                        let group = getValues.group(item);
+                        groups.push(group);
+                    } catch (err) {
+                        format_errors.push(err);
+                    }
+                    return;
+                }
+
+                // if group focus is listed, add the focus to the most recently added group
+                // this accounts for multiple groups each followed by a group focus
+                if (validate.isGroupFocus(item)) {
+                    try {
+                        let focus = getValues.groupFocus(item);
+                        let lastGroup = groups[groups.length - 1];
+
+                        if (!lastGroup) {
+                            throw new FormatError('group_focus', item);
+                        }
+
+                        lastGroup.focus = focus;
+                    } catch (err) {
+                        format_errors.push(err);
+                    }
+                    return;
+                }
+            }
+
+
          
             // if an item cannot be matched to a property, log error
-            console.error('Undefined field for speaker ' + name);
+            console.error(`Unknown field for ${person.type} ${person.name}`);
+
             // if an item cannot be matched to a property, push it into undefined fields array with it's raw value
-            undefined_fields.push( new FormatError('', item, 'unknown field, format not recognized'));
-            lastAssignedValue = 'unknown';
+            unknown_fields.push( new FormatError('', item, 'unknown field, format not recognized'));
 
         });
 
@@ -154,6 +175,7 @@ function mapPersons(array) {
             email,
             location,
             topics,
+            groups,
             languages,
             about,
             how_to_contact,
@@ -180,7 +202,7 @@ function mapPersons(array) {
                 html,
                 format_errors,
                 missing_fields,
-                undefined_fields
+                unknown_fields
             },
         }; 
 
