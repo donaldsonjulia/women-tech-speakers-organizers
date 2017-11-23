@@ -124,36 +124,35 @@ function mapPersons(array) {
 
             // if person.type = organizer, map groups accordingly
             if (person.type === 'organizer') {
-                let group = {
-                    name: '',
-                    website: '',
-                    location: '',
-                    focus: ''
-                }
+        
 
-                if (validate.isGroupSite(item)) {
-                    group.name = item.text;
-                    group.website = item.href;
-
-                    groups.push(group);
+                // if group website is listed as single link or listed with location 
+                // add it to groups array
+                if (validate.isGroupSite(item) || validate.isGroupSiteWithLocation(item)) {
+                    try {
+                        let group = getValues.group(item);
+                        groups.push(group);
+                    } catch (err) {
+                        format_errors.push(err);
+                    }
                     return;
                 }
 
-                if (validate.isGroupSiteWithLocation(item)) {
-                    group.name = item.mixed[0].text;
-                    group.website = item.mixed[0].href;
-
-                    groupLocation = _.trimStart(item.mixed[1].text, [',']);
-                    groupLocation = _.trim(groupLocation);
-                    group.location = groupLocation;
-                    
-                    groups.push(group);
-                    return;
-                }
-
+                // if group focus is listed, add the focus to the most recently added group
+                // this accounts for multiple groups each followed by a group focus
                 if (validate.isGroupFocus(item)) {
-                    let lastGroup = groups[groups.length - 1];
-                    lastGroup.focus = item.text;
+                    try {
+                        let focus = getValues.groupFocus(item);
+                        let lastGroup = groups[groups.length - 1];
+
+                        if (!lastGroup) {
+                            throw new FormatError('group_focus', item);
+                        }
+
+                        lastGroup.focus = focus;
+                    } catch (err) {
+                        format_errors.push(err);
+                    }
                     return;
                 }
             }

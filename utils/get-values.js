@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const FormatError = require('./format-error-constructor');
+const validate = require('./validate-fields.js');
 
 
 module.exports = {
@@ -86,6 +87,59 @@ module.exports = {
         }
 
         return contactValue;
-    }
+    },
+
+    group(item) {
+        let group = {
+            name: '',
+            website: '',
+            location: '',
+            focus: ''
+        };
+
+        if (validate.isGroupSite(item)) {
+            group.name = item.text;
+            group.website = item.href;
+    
+        } else if (validate.isGroupSiteWithLocation(item)) {
+            group.name = item.mixed[0].text;
+            group.website = item.mixed[0].href;
+    
+            groupLocation = _.trimStart(item.mixed[1].text, [',']);
+            groupLocation = _.trim(groupLocation);
+            group.location = groupLocation;
+    
+            if (!group.location) {
+                throw new FormatError('group', item);
+            }
+        }
+
+        if (!group.name || !group.website || !group) {
+            throw new FormatError('group', item);
+        }
+
+        return group;
+    },
+
+    groupFocus(item) {
+        let rawValues = item.text.split('-');
+        let focus = rawValues[1];
+
+        if (rawValues.length > 2) {
+            for (let i = 2; i < rawValues.length; i++) {
+                if (rawValues[i]) {
+                  focus = focus + '-' + rawValues[i];
+                }
+            }
+        }
+
+        focus = _.trim(focus);
+
+        if (!focus) {
+            throw new FormatError('group_focus', item);
+        }
+
+        return focus;
+    },
 
 };
