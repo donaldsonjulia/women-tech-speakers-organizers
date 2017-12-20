@@ -99,6 +99,7 @@ async function init() {
     console.log('Successfully wrote all .json files to data directory.');
   } catch (error) {
     console.error(error);
+    process.exitCode(1);
   }
 }
 

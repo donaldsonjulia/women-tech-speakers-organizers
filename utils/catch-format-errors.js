@@ -15,7 +15,11 @@ function catchFormatErrors(data) {
   });
 
   if (allErrors.length > 0) {
-    throw new Error(`Errors found while parsing README: ${JSON.stringify(allErrors)}`);
+    allErrors.forEach((errSummary) => {
+      console.error(errSummary);
+    });
+    // throw new Error(`Errors found while parsing README: ${JSON.stringify(allErrors)}`);
+    throw new Error('Format errors or unknown fields found while parsing README');
   }
 }
 
