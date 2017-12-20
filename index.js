@@ -5,6 +5,8 @@ const _ = require('lodash');
 const mdToJson = require('./utils/md-to-json');
 const categorize = require('./utils/categorize-data');
 const mapPersons = require('./utils/map-persons');
+const catchFormatErrors = require('./utils/catch-format-errors');
+
 
 async function init() {
   try {
@@ -81,6 +83,12 @@ async function init() {
     organizers = mapPersons(organizers);
     interested = mapPersons(interested);
     mentors = mapPersons(mentors);
+
+    // compile any and all format errors and throw error with summary
+    catchFormatErrors(speakers);
+    catchFormatErrors(organizers);
+    catchFormatErrors(interested);
+    catchFormatErrors(mentors);
 
     // write separated data to individual files
     await fs.writeJson('data/speakers-data.json', speakers);
