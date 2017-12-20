@@ -156,7 +156,7 @@ function mapPersons(array) {
 
 
       // if an item cannot be matched to a property, log error
-      console.error(`Unknown field for ${person.type} ${person.name}`);
+      // console.error(`Unknown field for ${person.type} ${person.name}`);
 
       // if an item cannot be matched to a property, push into undefined_fields  with it's raw value
       unknownFields.push(new FormatError('', item, 'unknown field, format not recognized'));
