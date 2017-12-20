@@ -2,12 +2,11 @@ function catchFormatErrors(data) {
   const allErrors = [];
 
   data.forEach((person) => {
-    if (person.meta.formatErrors.length > 0 || person.meta.unknownFields.length > 0) {
+    if (person.meta.formatErrors.length > 0) {
       const errorSummary = {
+        name: person.attributes.name,
         type: person.type,
-        person: person.attributes.name,
-        formatErrors: person.meta.formatErrors,
-        unknownFields: person.meta.unknownFields,
+        errors: person.meta.formatErrors,
       };
 
       allErrors.push(errorSummary);
@@ -16,7 +15,7 @@ function catchFormatErrors(data) {
 
   if (allErrors.length > 0) {
     allErrors.forEach((errSummary) => {
-      console.error(errSummary);
+      console.error('FORMAT ERROR', errSummary);
     });
     // throw new Error(`Errors found while parsing README: ${JSON.stringify(allErrors)}`);
     throw new Error('Format errors or unknown fields found while parsing README');

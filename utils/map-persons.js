@@ -29,7 +29,6 @@ function mapPersons(array) {
     let howToContact = '';
     let { html } = person;
 
-    const unknownFields = [];
     const formatErrors = [];
 
     flatArray.forEach((item, index) => {
@@ -158,8 +157,8 @@ function mapPersons(array) {
       // if an item cannot be matched to a property, log error
       // console.error(`Unknown field for ${person.type} ${person.name}`);
 
-      // if an item cannot be matched to a property, push into undefined_fields  with it's raw value
-      unknownFields.push(new FormatError('', item, 'unknown field, format not recognized'));
+      // if an item cannot be matched to a property, push into formatErrors  with it's raw value
+      formatErrors.push(new FormatError('', item, 'unknown field, format not recognized'));
     });
 
     const attributes = {
@@ -180,6 +179,7 @@ function mapPersons(array) {
     const missingFields = [];
 
     // check for falsey values for data attributes, if falsey then add key name to missingFields
+    // TODO - determine how to handle this, since most info can be optional...
     Object.entries(attributes).forEach(([key, value]) => {
       if (!value || value === []) {
         // ignore some fields, do not flag them as missing
@@ -197,7 +197,6 @@ function mapPersons(array) {
         html,
         formatErrors,
         missingFields,
-        unknownFields,
       },
     };
 
