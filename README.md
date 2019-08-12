@@ -160,7 +160,7 @@ If anyone is reported as malicious or making others feel uncomfortable, they may
 
 #### Asia Hoe
 
-- [@TwitterHandle](http://twitter.com/asiahoe)
+- [@asiahoe](http://twitter.com/asiahoe)
 - [Personal Website](http://www.asiahoe.com)
 - Topics - Design, Design Systems, Mentorship, Mobile, Philanthropy, User Research, UX
 - Location - New York, NY, USA
@@ -501,7 +501,7 @@ If anyone is reported as malicious or making others feel uncomfortable, they may
 
 - [@elizacamber](https://twitter.com/ElizaCamber)
 - [Medium](https://medium.com/@elizacamber)
-- Topics - Android, VUI (conversational apps), diversity, communities 
+- Topics - Android, VUI (conversational apps), diversity, communities
 - Location - Amsterdam, the Netherlands
 - Languages besides English - Greek
 
@@ -658,7 +658,7 @@ If anyone is reported as malicious or making others feel uncomfortable, they may
 - Languages besides English - Dutch
 
 #### Kseniia Shumelchyk
- 
+
  - [@KseniiaS](https://twitter.com/KseniiaS)
  - [Facebook](https://www.facebook.com/kseniya.shumelchyk)
  - [LinkedIn](https://www.linkedin.com/in/kseniiashumelchyk/)
@@ -669,7 +669,7 @@ If anyone is reported as malicious or making others feel uncomfortable, they may
 #### Bo Vandersteene
 
 - [@reibo_bo](http://twitter.com/reibo_bo)
-- Topics - Keynote Speeches, Angular, Typescript, Javascript. 
+- Topics - Keynote Speeches, Angular, Typescript, Javascript.
 - Location - Kortrijk, Belgium.
 - Languages besides English - Dutch and French.
 
@@ -920,7 +920,7 @@ If anyone is reported as malicious or making others feel uncomfortable, they may
 - [Women Technmakers Berlin](http://wtmberlin.com/)
 
 #### Kseniia Shumelchyk
- 
+
  - [@KseniiaS](https://twitter.com/KseniiaS)
  - [Facebook](https://www.facebook.com/kseniya.shumelchyk)
  - [GDG Dnipro] (https://www.facebook.com/gdgdnipro), Dnipro, Ukraine
@@ -979,11 +979,11 @@ If anyone is reported as malicious or making others feel uncomfortable, they may
 - LinkedIn: https://www.linkedin.com/in/manjula-dube-9b5b3550/
 - I love teaching so any one looking out for a JavaScript mentor reach out to me. I would love to talk about it.
 
-### Nigeria 
+### Nigeria
 
 #### Ada Nduka Oyom
 - [@kolokodess](https://twitter.com/kolokodess)
-- How to Contact - via Twitter 
+- How to Contact - via Twitter
 - Topics for Mentoring - Web development, Students in Bootcamps,  Public Speaking, Technical Writing, Open Source Software, Running Inclusive Workshops, Team Building, community building
 - Location - Lagos, Nigeria
 
